@@ -48,6 +48,20 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
+  .settings {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #FFFFFF;
+  padding: 10px;
+  border-radius: 10px;
+  color: black;
+  }
+
+  .settings label, .settings input, .settings button {
+    margin-right: 5px;
+  }
+
   .settings-icon {
     position: absolute;
     top: 50px;
@@ -171,6 +185,13 @@
       </div>
     </div>
   </div>
+  <div class="settings">
+    <label for="reminderInterval">Reminder every (minutes):</label>
+    <input type="number" id="reminderInterval" min="1" value="5"> <!-- Default to 5 minutes -->
+    <button id="setReminder">Set Reminder</button>
+  </div>
+  <audio id="reminderSound" src="reminder.mp3" type="audio/mp3"></audio> <!-- Add your audio file here -->
+  
   <div class="settings-icon">
     &#9881;
   </div>
@@ -303,6 +324,81 @@
     document.getElementById('toggle-timer').addEventListener('click', startStopTimer);
     document.getElementById('end-timer').addEventListener('click', startStopTimer);
     document.getElementById('toggle-sessions').addEventListener('click', toggleSessionsDisplay);
+  
+    /* Need to implemenet noti. system (User-inputted timer) */
+  
+    document.getElementById('setReminder').addEventListener('click', function() {
+      const intervalMinutes = parseInt(document.getElementById('reminderInterval').value);
+      if (isNaN(intervalMinutes) || intervalMinutes <= 0) {
+        alert("Please enter a valid number of minutes.");
+        return;
+      }
+      reminderTime = intervalMinutes * 60 * 1000; // Convert minutes to milliseconds
+    });
+
+    let reminderTime = 1800000; // defaulted to 30 minutes
+    let reminderInterval;
+
+    function startStopTimer() {
+      if (!running) {
+        startTime = paused ? pauseTime : new Date().getTime();
+        tInterval = setInterval(function() {
+          getShowTime();
+          checkReminder();
+        }, 1000);
+        running = true;
+        document.getElementById('toggle-timer').textContent = 'Stop';
+        document.getElementById('pause-timer').style.display = 'inline';
+      } else {
+        clearInterval(tInterval);
+        running = false;
+        paused = false;
+        document.getElementById('toggle-timer').textContent = 'Start';
+        document.getElementById('pause-timer').style.display = 'none';
+        document.getElementById('pause-timer').textContent = 'Pause';
+        difference = 0;
+      }
+    }
+
+    function getShowTime() {
+      updatedTime = new Date().getTime();
+      difference = updatedTime - startTime;
+      let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      let seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      hours = (hours < 10) ? "0" + hours : hours;
+      minutes = (minutes < 10) ? "0" + minutes : minutes;
+      seconds = (seconds < 10) ? "0" + seconds : seconds;
+      document.getElementById('clock').textContent = hours + ':' + minutes + ':' + seconds;
+    }
+
+    function checkReminder() {
+      if (difference >= reminderTime) {
+        document.getElementById('reminderSound').play();
+        startTime = new Date().getTime(); // Reset the timer for the next interval
+        difference = 0; // Reset the difference
+      }
+    }
+
+    document.getElementById('pause-timer').addEventListener('click', function() {
+      if (!paused) {
+        clearInterval(tInterval);
+        paused = true;
+        pauseTime = new Date().getTime();
+        this.textContent = 'Resume';
+      } else {
+        paused = false;
+        startTime += new Date().getTime() - pauseTime;
+        tInterval = setInterval(function() {
+          getShowTime();
+          checkReminder();
+        }, 1000);
+        this.textContent = 'Pause';
+      }
+    });
+
+
+
   </script>
   
   
@@ -310,4 +406,3 @@
   
 </body>
 </html>
- 
