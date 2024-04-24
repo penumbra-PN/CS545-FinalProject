@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relaxtension</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #1E90FF;
+    font-family: Arial, sans-serif;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .container {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 80%;
+  }
+  .circle {
+    background-color: #90EE90;
+    border-radius: 50%;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .clock-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .clock {
+    background-color: black;
+    color: white;
+    font-size: 2em;
+    padding: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .settings {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #FFFFFF;
+  padding: 10px;
+  border-radius: 10px;
+  color: black;
+  }
+
+  .settings label, .settings input, .settings button {
+    margin-right: 5px;
+  }
+
+  .settings-icon {
+    position: absolute;
+    top: 50px;
+    right: 20px;
+  }
+  .session-text {
+  margin-bottom: 10px;
+  font-size: 1.5em;
+  }
+
+  .session-name {
+    margin-right: 10px;
+  }
+
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    background-color: #90EE90;
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s;
+    margin-left: 5px;
+  }
+
+  button:hover {
+    background-color: #76b476;
+  }
+
+  button:active {
+    background-color: #5da05d;
+  }
+
+  #toggle-timer {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 30px;
+  background-color: #90EE90;
+  color: white;
+  font-size: 1em;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.3s;
+}
+
+#toggle-timer:hover {
+  background-color: #90EE90;
+}
+
+#toggle-timer:active {
+  background-color: #90EE90;
+}
+
+.session-times {
+  background: rgba(255, 255, 255, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+}
+
+.clock-container {
+  position: relative;
+}
+
+#session-times-container {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 10px;
+  z-index: 10;
+}
+
+#pause-timer {
+  background-color: #FFC300 ;
+  color: black;
+}
+
+#end-timer{
+  display:none;
+  background-color: #F97971;
+  color: white;
+}
+
+#end-timer.show{
+  display: inline-block;
+}
+
+</style>
+</head>
+<body>
+
+<ul>
+    <li><a href="/"> home</a></li>
+    <li><a href="/about"> about </a></li>
+    <li><a href="/settings"> settings </a></li>
+    <li><a href="/focuspage"> focuspage </a></li>
+</ul>
+
+  <div class="container">
+    <div class="circle">
+      <img src="waterbottle.png" alt="Water Bottle" style="max-width:100%; max-height:100%;">
+    </div>
+    <div class="clock-container">
+      <div class="session-text">CURRENT SESSION</div>
+      <div class="clock" id="clock">00:00:00</div>
+      <button id="toggle-timer">Start</button>
+      <button id="pause-timer" style="display: none;">Pause</button>
+      <button id="end-timer" class="show">End</button>
+      <button id="toggle-sessions">Show Sessions</button>
+      <div id="session-times-container" style="display: none;">
+        <div id="lap-times"></div>
+      </div>
+    </div>
+  </div>
+  <div class="settings">
+    <label for="reminderInterval">Reminder every (minutes):</label>
+    <input type="number" id="reminderInterval" min="1" value="5"> <!-- Default to 5 minutes -->
+    <button id="setReminder">Set Reminder</button>
+  </div>
+  <audio id="reminderSound" src="reminder.mp3" type="audio/mp3"></audio> <!-- Add your audio file here -->
+  
+  <div class="settings-icon">
+    &#9881;
+  </div>
+
+  <script>
+    let startTime;
+    let updatedTime;
+    let difference = 0;
+    let tInterval;
+    let running = false;
+    let sessionNumber = 0;
+    let paused = false;
+    let pausetime;
+  
+    function startStopTimer() {
+      let startStopButton = document.getElementById('toggle-timer');
+      let pauseButton = document.getElementById('pause-timer');
+      let endButton = document.getElementById('end-timer');
+
+      if (!running) {
+        if (paused) {
+          paused = false;
+          startTime += new Date().getTime() - pauseTime;
+        } else {
+          startTime = new Date().getTime();
+        }
+        
+        tInterval = setInterval(getShowTime, 1000);
+        running = true;
+        startStopButton.style.display = 'none';
+        pauseButton.style.display = 'inline';
+        endButton.classList.add('show');
+      } else {
+        clearInterval(tInterval);
+        if (difference >= 1000) {
+          recordSession();
+        }
+        running = false;
+        paused = false;
+        startStopButton.style.display = 'inline';
+        pauseButton.style.display = 'none';
+        endButton.classList.remove('show');
+        difference = 0;
+      }
+    }
+
+    function pauseTimer() {
+      let pauseButton = document.getElementById('pause-timer');
+      if (!paused) {
+        clearInterval(tInterval);
+        paused = true;
+        pauseTime = new Date().getTime();
+        pauseButton.textContent = 'Resume';
+      } else {
+        paused = false;
+        startTime += new Date().getTime() - pauseTime;
+        tInterval = setInterval(getShowTime, 1000);
+        pauseButton.textContent = 'Pause';
+      }
+    }
+
+    function recordSession() {
+      let sessionTime = document.getElementById('clock').textContent;
+      sessionNumber++;
+      let sessionDiv = document.createElement('div');
+      sessionDiv.className = 'session';
+      sessionDiv.id = 'session-' + sessionNumber;
+
+      let sessionNameSpan = document.createElement('span');
+      sessionNameSpan.textContent = 'Session ' + sessionNumber;
+      sessionNameSpan.className = 'session-name';
+
+      let sessionTimeSpan = document.createElement('span');
+      sessionTimeSpan.textContent = ': ' + sessionTime;
+      sessionTimeSpan.className = 'session-time';
+
+      let renameButton = document.createElement('button');
+      renameButton.textContent = 'Rename';
+      renameButton.onclick = function() { renameSession(sessionNameSpan); };
+
+      sessionDiv.appendChild(sessionNameSpan);
+      sessionDiv.appendChild(sessionTimeSpan);
+      sessionDiv.appendChild(renameButton);
+
+      document.getElementById('lap-times').appendChild(sessionDiv);
+    }
+
+    function renameSession(sessionNameElement) {
+      let newName = prompt('Enter new session name:', sessionNameElement.textContent);
+      if (newName !== null && newName.trim() !== '') {
+        sessionNameElement.textContent = newName;
+      }
+    }
+
+    function handleSessionOptions(selectElement, sessionId) {
+      let selectedOption = selectElement.value;
+      let sessionDiv = document.getElementById(sessionId);
+
+      if (selectedOption === 'rename') {
+        let sessionNameElement = sessionDiv.querySelector('.session-name');
+        renameSession(sessionNameElement);
+      } 
+      selectElement.selectedIndex = 0;
+    }
+
+    function getShowTime() {
+      updatedTime = new Date().getTime();
+      difference = updatedTime - startTime;
+      let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      let seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      hours = (hours < 10) ? "0" + hours : hours;
+      minutes = (minutes < 10) ? "0" + minutes : minutes;
+      seconds = (seconds < 10) ? "0" + seconds : seconds;
+      document.getElementById('clock').textContent = hours + ':' + minutes + ':' + seconds;
+    }
+  
+    function toggleSessionsDisplay() {
+      var sessionTimesContainer = document.getElementById('session-times-container');
+      if (sessionTimesContainer.style.display === 'none' || !sessionTimesContainer.style.display) {
+        sessionTimesContainer.style.display = 'block';
+        document.getElementById('toggle-sessions').textContent = 'Hide Sessions';
+      } else {
+        sessionTimesContainer.style.display = 'none';
+        document.getElementById('toggle-sessions').textContent = 'Show Sessions';
+      }
+    }
+
+    document.getElementById('pause-timer').addEventListener('click', pauseTimer);
+    document.getElementById('toggle-timer').addEventListener('click', startStopTimer);
+    document.getElementById('end-timer').addEventListener('click', startStopTimer);
+    document.getElementById('toggle-sessions').addEventListener('click', toggleSessionsDisplay);
+  
+    /* Need to implemenet noti. system (User-inputted timer) */
+  
+    document.getElementById('setReminder').addEventListener('click', function() {
+      const intervalMinutes = parseInt(document.getElementById('reminderInterval').value);
+      if (isNaN(intervalMinutes) || intervalMinutes <= 0) {
+        alert("Please enter a valid number of minutes.");
+        return;
+      }
+      reminderTime = intervalMinutes * 60 * 1000; // Convert minutes to milliseconds
+    });
+
+    let reminderTime = 1800000; // defaulted to 30 minutes
+    let reminderInterval;
+
+    function startStopTimer() {
+      if (!running) {
+        startTime = paused ? pauseTime : new Date().getTime();
+        tInterval = setInterval(function() {
+          getShowTime();
+          checkReminder();
+        }, 1000);
+        running = true;
+        document.getElementById('toggle-timer').textContent = 'Stop';
+        document.getElementById('pause-timer').style.display = 'inline';
+      } else {
+        clearInterval(tInterval);
+        running = false;
+        paused = false;
+        document.getElementById('toggle-timer').textContent = 'Start';
+        document.getElementById('pause-timer').style.display = 'none';
+        document.getElementById('pause-timer').textContent = 'Pause';
+        difference = 0;
+      }
+    }
+
+    function getShowTime() {
+      updatedTime = new Date().getTime();
+      difference = updatedTime - startTime;
+      let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      let seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      hours = (hours < 10) ? "0" + hours : hours;
+      minutes = (minutes < 10) ? "0" + minutes : minutes;
+      seconds = (seconds < 10) ? "0" + seconds : seconds;
+      document.getElementById('clock').textContent = hours + ':' + minutes + ':' + seconds;
+    }
+
+    function checkReminder() {
+      if (difference >= reminderTime) {
+        document.getElementById('reminderSound').play();
+        startTime = new Date().getTime(); // Reset the timer for the next interval
+        difference = 0; // Reset the difference
+      }
+    }
+
+    document.getElementById('pause-timer').addEventListener('click', function() {
+      if (!paused) {
+        clearInterval(tInterval);
+        paused = true;
+        pauseTime = new Date().getTime();
+        this.textContent = 'Resume';
+      } else {
+        paused = false;
+        startTime += new Date().getTime() - pauseTime;
+        tInterval = setInterval(function() {
+          getShowTime();
+          checkReminder();
+        }, 1000);
+        this.textContent = 'Pause';
+      }
+    });
+
+
+
+  </script>
+  
+  
+  
+  
+</body>
+</html>
