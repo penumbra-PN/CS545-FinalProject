@@ -48,20 +48,6 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
-  .settings {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: #FFFFFF;
-  padding: 10px;
-  border-radius: 10px;
-  color: black;
-  }
-
-  .settings label, .settings input, .settings button {
-    margin-right: 5px;
-  }
-
   .settings-icon {
     position: absolute;
     top: 50px;
@@ -75,6 +61,41 @@
   .session-name {
     margin-right: 10px;
   }
+
+  #notes-button {
+  background-color: #FFF8DC; /* Light yellow for a notes-like appearance */
+  color: black;
+  border: 1px solid #BDB76B; /* Dark khaki border */
+  cursor: pointer;
+  padding: 10px 20px;
+  margin-right: 20px; /* Space between button and water bottle */
+  }
+
+  .notes-container {
+    position: absolute; /* Positioning it on screen */
+    width: 300px; /* Size of the note paper */
+    height: 400px;
+    background: url('note_paper.png') no-repeat center center; /* Assuming you have an image */
+    background-size: contain;
+    z-index: 100;
+  }
+
+  .reminder-container {
+    position: fixed; /* Fixed at the bottom of the screen */
+    bottom: 20px; /* Slightly up from the absolute bottom */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Centering correction */
+    background: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .reminder-container input, .reminder-container button {
+    padding: 5px 10px;
+    margin-left: 5px;
+  }
+
 
   button {
     padding: 10px 20px;
@@ -162,16 +183,13 @@
 </head>
 <body>
 
-<ul>
-    <li><a href="/"> home</a></li>
-    <li><a href="/about"> about </a></li>
-    <li><a href="/settings"> settings </a></li>
-    <li><a href="/focuspage"> focuspage </a></li>
-</ul>
-
   <div class="container">
+    <button id="notes-button">Notes</button>
     <div class="circle">
       <img src="waterbottle.png" alt="Water Bottle" style="max-width:100%; max-height:100%;">
+    </div>
+    <div class="notes-container" style="display: none;">
+      <img src="note_paper.png" alt="Note Paper" style="max-width:100%; max-height:100%;"> <!-- Placeholder for notes paper -->
     </div>
     <div class="clock-container">
       <div class="session-text">CURRENT SESSION</div>
@@ -185,15 +203,14 @@
       </div>
     </div>
   </div>
-  <div class="settings">
-    <label for="reminderInterval">Reminder every (minutes):</label>
-    <input type="number" id="reminderInterval" min="1" value="5"> <!-- Default to 5 minutes -->
-    <button id="setReminder">Set Reminder</button>
-  </div>
-  <audio id="reminderSound" src="reminder.mp3" type="audio/mp3"></audio> <!-- Add your audio file here -->
-  
   <div class="settings-icon">
     &#9881;
+  </div>
+  </div>
+  <div class="reminder-container">
+    <label for="reminder-interval">Set Reminder (minutes):</label>
+    <input type="number" id="reminder-interval" min="1" placeholder="e.g., 5">
+    <button id="set-reminder">Set</button>
   </div>
 
   <script>
@@ -324,80 +341,17 @@
     document.getElementById('toggle-timer').addEventListener('click', startStopTimer);
     document.getElementById('end-timer').addEventListener('click', startStopTimer);
     document.getElementById('toggle-sessions').addEventListener('click', toggleSessionsDisplay);
-  
+    
     /* Need to implemenet noti. system (User-inputted timer) */
   
-    document.getElementById('setReminder').addEventListener('click', function() {
-      const intervalMinutes = parseInt(document.getElementById('reminderInterval').value);
-      if (isNaN(intervalMinutes) || intervalMinutes <= 0) {
-        alert("Please enter a valid number of minutes.");
-        return;
-      }
-      reminderTime = intervalMinutes * 60 * 1000; // Convert minutes to milliseconds
-    });
-
-    let reminderTime = 1800000; // defaulted to 30 minutes
-    let reminderInterval;
-
-    function startStopTimer() {
-      if (!running) {
-        startTime = paused ? pauseTime : new Date().getTime();
-        tInterval = setInterval(function() {
-          getShowTime();
-          checkReminder();
-        }, 1000);
-        running = true;
-        document.getElementById('toggle-timer').textContent = 'Stop';
-        document.getElementById('pause-timer').style.display = 'inline';
+    document.getElementById('notes-button').addEventListener('click', function() {
+      var notesContainer = document.querySelector('.notes-container');
+      if (notesContainer.style.display === "none" || !notesContainer.style.display) {
+        notesContainer.style.display = "block";
       } else {
-        clearInterval(tInterval);
-        running = false;
-        paused = false;
-        document.getElementById('toggle-timer').textContent = 'Start';
-        document.getElementById('pause-timer').style.display = 'none';
-        document.getElementById('pause-timer').textContent = 'Pause';
-        difference = 0;
-      }
-    }
-
-    function getShowTime() {
-      updatedTime = new Date().getTime();
-      difference = updatedTime - startTime;
-      let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      let seconds = Math.floor((difference % (1000 * 60)) / 1000);
-      hours = (hours < 10) ? "0" + hours : hours;
-      minutes = (minutes < 10) ? "0" + minutes : minutes;
-      seconds = (seconds < 10) ? "0" + seconds : seconds;
-      document.getElementById('clock').textContent = hours + ':' + minutes + ':' + seconds;
-    }
-
-    function checkReminder() {
-      if (difference >= reminderTime) {
-        document.getElementById('reminderSound').play();
-        startTime = new Date().getTime(); // Reset the timer for the next interval
-        difference = 0; // Reset the difference
-      }
-    }
-
-    document.getElementById('pause-timer').addEventListener('click', function() {
-      if (!paused) {
-        clearInterval(tInterval);
-        paused = true;
-        pauseTime = new Date().getTime();
-        this.textContent = 'Resume';
-      } else {
-        paused = false;
-        startTime += new Date().getTime() - pauseTime;
-        tInterval = setInterval(function() {
-          getShowTime();
-          checkReminder();
-        }, 1000);
-        this.textContent = 'Pause';
+        notesContainer.style.display = "none";
       }
     });
-
-
 
   </script>
   
