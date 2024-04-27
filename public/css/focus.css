@@ -1,0 +1,191 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #1E90FF;
+    font-family: Arial, sans-serif;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .container {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 80%;
+  }
+  .circle {
+    background-color: #90EE90;
+    border-radius: 50%;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .clock-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .clock {
+    background-color: black;
+    color: white;
+    font-size: 2em;
+    padding: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .settings-icon {
+    position: absolute;
+    top: 50px;
+    right: 20px;
+    font-size: 80px;
+    cursor: pointer;
+  }
+  .settings-link {
+    color: white;
+    text-decoration: none;
+  }
+  .session-text {
+  margin-bottom: 10px;
+  font-size: 1.5em;
+  }
+
+  .session-name {
+    margin-right: 10px;
+  }
+
+  #notes-button {
+  background-color: #FFF8DC; /* Light yellow for a notes-like appearance */
+  color: black;
+  border: 1px solid #BDB76B; /* Dark khaki border */
+  cursor: pointer;
+  padding: 10px 20px;
+  margin-right: 20px; /* Space between button and water bottle */
+  }
+
+  .notes-container {
+    position: absolute; /* Positioning it on screen */
+    width: 300px; /* Size of the note paper */
+    height: 400px;
+    /* background: url('note_paper.png') no-repeat center center; / Assuming you have an image */
+    background-size: contain;
+    z-index: 100;
+  }
+
+  .reminder-container {
+    position: fixed; /* Fixed at the bottom of the screen */
+    bottom: 20px; /* Slightly up from the absolute bottom */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Centering correction */
+    background: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .reminder-container input, .reminder-container button {
+    padding: 5px 10px;
+    margin-left: 5px;
+  }
+
+
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    background-color: #90EE90;
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s;
+    margin-left: 5px;
+  }
+
+  button:hover {
+    background-color: #76b476;
+  }
+
+  button:active {
+    background-color: #5da05d;
+  }
+
+  #toggle-timer {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 30px;
+  background-color: #90EE90;
+  color: white;
+  font-size: 1em;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.3s;
+}
+
+#toggle-timer:hover {
+  background-color: #90EE90;
+}
+
+#toggle-timer:active {
+  background-color: #90EE90;
+}
+
+.session-times {
+  background: rgba(255, 255, 255, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+}
+
+.clock-container {
+  position: relative;
+}
+
+/* .notes-text {
+    background-image: url('../views/note_paper.png');
+    border: 0 none;
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background-size: contain;
+    z-index: 100;
+    padding-top: 40px;
+    padding-left: 40px;
+} */
+
+#session-times-container {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 10px;
+  z-index: 10;
+}
+
+#pause-timer {
+  background-color: #FFC300 ;
+  color: black;
+}
+
+#end-timer{
+  display:none;
+  background-color: #F97971;
+  color: white;
+}
+
+#end-timer.show{
+  display: inline-block;
+}

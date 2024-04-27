@@ -1,3 +1,18 @@
-.timerPage {
+/* Styles for homepage - timer.html */
+
+body.timerPage {
     background-color: aquamarine;
+    font-family: 'Lucida Handwriting', cursive;
+}
+
+ul.nav {
+    list-style-type: none;
+}
+
+a:link {
+
+}
+
+a:visited {
+    
 }
